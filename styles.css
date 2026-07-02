@@ -1,0 +1,76 @@
+body{
+	background: #aacfdd;
+}
+
+.container{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+h1{
+	font-family: "Bitcount Single", sans-serif;
+	font-size: 48px;
+	font-weight: 500;	
+
+	&.player-one{
+		color: rgb(1, 140, 91);
+	}
+
+	&.player-two{
+		color: rgb(2, 101, 187);
+	}
+}
+
+
+
+.board {
+	display: flex;
+	flex-flow: wrap;
+	height: 500px;
+	width: 500px;
+
+	/* grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(3, 1fr); */
+	border-radius: 16px;
+	border: 1px solid #6a919e;
+	gap: 16px;
+	padding: 32px;
+	background-color: lightblue;
+}
+
+.cell {
+	font-family: "Nunito Sans", sans-serif;
+	font-weight: 600;
+	display: flex;
+	flex: 1 0 130px;
+
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	font-size: 3rem;
+
+	border-radius: 16px;
+	border: none;
+	/* border-top: 0;
+	border-right: 2px solid #575757;
+	border-bottom: 2px solid #575757;
+	border-left: 2px solid #575757; */
+	background: #E7E7E7;
+	box-shadow: -4px -4px 8px 0 rgba(255, 255, 255, 0.60), 
+				0 6px 6px 0 rgba(255, 255, 255, 0.03) inset, 
+				0 -6px 2px 0 rgba(0, 0, 0, 0.25) inset, 
+				6px 6px 8px 0 rgba(0, 0, 0, 0.25);
+
+	background: #add8e6;
+	cursor: pointer;
+}
+
+.cell:active{
+	transform: translateY(2px);
+	box-shadow: -4px -4px 8px 0 rgba(255, 255, 255, 0.76), 
+				6px 6px 8px 0 rgba(0, 0, 0, 0.25);
+
+}
+
