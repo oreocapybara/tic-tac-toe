@@ -217,6 +217,7 @@ function ScreenController() {
 		const optionDiv = document.querySelector(".options");
 
 		const restart = document.createElement("button");
+		restart.classList = 'restart'
 		restart.textContent = "Restart";
 		restart.addEventListener("click", () => {
 			game.resetBoard();
