@@ -4,21 +4,25 @@ function GameBoard() {
 	const column = 3;
 	const board = [];
 
-	//Create a 2d array that will append the Cell object;
-	for (let i = 0; i < row; i++) {
-		board[i] = [];
-		for (let j = 0; j < column; j++) {
-			board[i].push(Cell());
+	//Create a 2d array that will append the Cell objects
+
+	const createBoard = () => {
+		for (let i = 0; i < row; i++) {
+			board[i] = [];
+			for (let j = 0; j < column; j++) {
+				board[i].push(Cell());
+			}
 		}
-	}
+	};
 
 	// Method to get the board
 	const getBoard = () => board;
 
 	// Method to update the board
 	const updateBoard = (row, column, action) => {
-		if (board[row][column].getValue() !== 0) return; // if the selected cell has a value return
+		if (board[row][column].getValue() !== 0) return false; // if the selected cell has a value return
 		board[row][column].addPlayerAction(action);
+		return true;
 	};
 
 	// Method to print the board
@@ -29,7 +33,8 @@ function GameBoard() {
 		console.log(boardWithValues);
 	};
 
-	return { getBoard, updateBoard, printBoard };
+	createBoard();
+	return { createBoard, getBoard, updateBoard, printBoard };
 }
 
 function Cell() {
@@ -55,11 +60,11 @@ function GameController(
 	const players = [
 		{
 			name: playerOneName,
-			action: 'X',
+			action: "X",
 		},
 		{
 			name: playerTwoName,
-			action: 'O',
+			action: "O",
 		},
 	];
 
@@ -76,9 +81,10 @@ function GameController(
 		console.log(`${getActivePlayer().name}'s turn`);
 	};
 
-	const playRound = (row, column) => {
+	const playRound = (row, column) => {		
+		if (!board.updateBoard(row, column, getActivePlayer().action)) return;
 		console.log(`${getActivePlayer().name} places in [${row}][${column}]`);
-		board.updateBoard(row, column, getActivePlayer().action);
+		
 
 		//Winner logic
 		const checkWin = () => {
@@ -118,28 +124,41 @@ function GameController(
 				);
 			});
 
+			// Has row | column | diagonal match
 			if (rowWin || colWin || diag1Win || diag2Win) {
 				console.log(`${getActivePlayer().name} Wins!`);
-				return true;
+				return 1;
 			}
 
+			// Else
 			const isTie = arrayBoard.every((row) =>
 				row.every((cell) => cell.getValue() !== 0),
 			);
 
 			if (isTie) {
 				console.log("It's a tie!");
-				return false;
+				return 2;
 			}
 
-			return false;
+			return -1;
 		};
 
 		//Check for Winner
-		if (checkWin()) return;
+
+		switch (checkWin()) {
+			case 1:
+				return "Win";
+			case 2:
+				return "Tie";
+		}
 
 		switchActivePlayer();
 		printNewRound();
+	};
+
+	const resetBoard = () => {
+		activePlayer = players[0]; // Reset to first player
+		board.createBoard(); // Reset the board again
 	};
 
 	printNewRound();
@@ -148,6 +167,7 @@ function GameController(
 		playRound,
 		getActivePlayer,
 		getBoard: board.getBoard,
+		resetBoard,
 	};
 }
 
@@ -155,8 +175,9 @@ function ScreenController() {
 	const game = GameController();
 	const boardDiv = document.querySelector(".board");
 	const turnDiv = document.querySelector(".turn");
+	let gameOver = false;
 
-	const updateScreen = () => {
+	const updateScreen = (result) => {
 		// clear the board
 		boardDiv.textContent = "";
 
@@ -165,36 +186,64 @@ function ScreenController() {
 		const activePlayer = game.getActivePlayer();
 
 		//Display Player turn
-		turnDiv.textContent = `${activePlayer.name}'s turn`;
+		if (result === "Win") {
+			turnDiv.textContent = `${activePlayer.name} Wins`;
+			gameOver = true;
+		} else if (result === "Tie") {
+			turnDiv.textContent = `It's a tie`;
+			gameOver = true;
+		} else {
+			turnDiv.textContent = `${activePlayer.name}'s turn`;
+		}
 
 		//Render the board squares
 		board.forEach((row, rowIndex) =>
 			row.forEach((cell, colIndex) => {
-				const cellButton = document.createElement('button');
+				const cellButton = document.createElement("button");
 				cellButton.classList = "cell";
 
-				cellButton.dataset.row = rowIndex
+				cellButton.dataset.row = rowIndex;
 				cellButton.dataset.column = colIndex;
-				cellButton.textContent = cell.getValue();
+
+				// Don't render the value of an empty cell
+				cellButton.textContent =
+					cell.getValue() === 0 ? "" : cell.getValue();
 				boardDiv.appendChild(cellButton);
 			}),
 		);
 	};
 
+	const renderOptions = () => {
+		const optionDiv = document.querySelector(".options");
+
+		const restart = document.createElement("button");
+		restart.textContent = "Restart";
+		restart.addEventListener("click", () => {
+			game.resetBoard();
+			gameOver = false;
+			updateScreen();
+		});
+
+		optionDiv.appendChild(restart);
+	};
+
 	// Add event listener for the board
 	function clickHandlerBoard(e) {
-		const selectedRow = e.target.dataset.row
+		if (gameOver) return;
+		const selectedRow = e.target.dataset.row;
 		const selectedColumn = e.target.dataset.column;
+
 		// Make sure I've clicked a column and not the gaps in between
 		if (!selectedColumn) return;
 
-		game.playRound(selectedRow, selectedColumn);
-		updateScreen();
+		updateScreen(game.playRound(selectedRow, selectedColumn));
 	}
+
 	boardDiv.addEventListener("click", clickHandlerBoard);
 
 	// Initial render
 	updateScreen();
+	renderOptions();
 }
 
 ScreenController();
